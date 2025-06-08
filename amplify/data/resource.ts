@@ -1,4 +1,6 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { postConfirmation } from "../auth/post-confirmation/resource";
+
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -12,14 +14,27 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.guest()]),
-});
+  UserProfile: a
+    .model({
+      email: a.string(),
+      profileOwner: a.string(),
+    })
+    .authorization((allow) => [
+      allow.ownerDefinedIn("profileOwner"),
+    ]),
+})
+.authorization((allow) => [allow.resource(postConfirmation)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    // defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });
 
